@@ -1,0 +1,70 @@
+---
+title: "datares_spring"
+author: "Shiyu Murashima"
+date: "4/28/2022"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# reading in data and cleaning
+home_data <- read.csv("Splits Leaderboard Data Home.csv")
+away_data <- read.csv("Splits Leaderboard Data Away.csv")
+a <- home_data[which(home_data$Season == 2021),]$ERA
+b <- away_data[which(away_data$Season == 2021),]$ERA
+
+home_data <- home_data[c(-141, -149, -155, -165, -171, -203, -216, -241, -249, -274, -277, -300, -302, -337,
+                         -341, -358, -365, -370, -375, -376, -405, -407, -427, -434, -453, -468, -470, -479,
+                         -483, -495, -496, -499, -517),]
+away_data <- away_data[c(-133, -205, -209, -211, -241, -322, -326, -329, -334, -353, -357, -363, -398, -409,
+                         -422, -430, -431, -443, -458, -468, -475, -480, -487),]
+
+home <- home_data[which(home_data$Season == 2021),]
+away <- away_data[which(away_data$Season == 2021),]
+```
+
+```{r}
+# adding location column
+home$Location <- 'Home'
+away$Location <- 'Away'
+df <- rbind(home, away)
+```
+
+```{r}
+# violin plot of pitcher era at home v away
+ggplot(df, aes(x = Location, y = ERA, fill = Location)) +
+        geom_violin(trim = FALSE) +
+        geom_boxplot(width = 0.1) +
+        stat_summary(fun=mean, geom="point", shape=10, size=2) +
+        scale_fill_brewer(palette="Paired") +
+        theme_classic() +
+        theme(legend.position="none") +
+        labs(title = "Pitcher ERA at Home vs Away", x = "Home/Away") +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        annotate(geom="text", x=1.17, y=3.886034, label="Mean: 3.886", color="black", size = 3) +
+        annotate(geom="text", x=2.17, y=4.197574, label="Mean: 4.198", color="black", size = 3) +
+        scale_x_discrete(limits=c("Home", "Away"))
+```
+
+```{r}
+# barplot of runs given up by pitcher at home v away
+home_summary <- home_data[c("H", "X2B", "X3B", "HR", "BB")]
+away_summary <- away_data[c("H", "X2B", "X3B", "HR", "BB")]
+
+
+total_summary <- rbind(c(mean(home_summary$H), mean(home_summary$X2B), mean(home_summary$X3B),
+                         mean(home_summary$HR), mean(home_summary$BB)),
+                       c(mean(away_summary$H), mean(away_summary$X2B), mean(away_summary$X3B),
+                         mean(away_summary$HR), mean(away_summary$BB)))
+
+barplot(total_summary, beside = T,
+        ylab = "Total",
+        ylim = c(0, 40),
+        col = c("darkorchid1", "darkorchid4"),
+        names = c("Single", "Double", "Triple", "Home Run", "Walk"),
+        main = "Runs Given Up by Pitcher at Home vs Away",
+        legend = c("Home", "Away"))
+```
